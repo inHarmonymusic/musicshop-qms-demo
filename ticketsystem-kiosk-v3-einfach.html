@@ -1,0 +1,574 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Musikshop – Ticket ziehen (Kiosk • ساده)</title>
+  <meta name="theme-color" content="#0b0f17" />
+  <style>
+    :root{
+      --bg0:#070a12;
+      --bg1:#0b1020;
+      --card:rgba(255,255,255,.06);
+      --stroke:rgba(255,255,255,.10);
+      --text:#eef2ff;
+      --muted:#aab4c8;
+      --accent:#8b5cf6;
+      --ok:#22c55e;
+      --warn:#f59e0b;
+      --bad:#ef4444;
+      --shadow: 0 18px 60px rgba(0,0,0,.55);
+      --shadow2: 0 10px 30px rgba(0,0,0,.35);
+      --r:22px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      color:var(--text);
+      background:
+        radial-gradient(1200px 800px at 18% 8%, rgba(139,92,246,.26), transparent 60%),
+        radial-gradient(900px 650px at 85% 22%, rgba(34,197,94,.18), transparent 58%),
+        radial-gradient(900px 750px at 50% 120%, rgba(245,158,11,.10), transparent 60%),
+        linear-gradient(180deg, var(--bg0), var(--bg1));
+    }
+    .wrap{
+      min-height:100%;
+      display:grid;
+      place-items:center;
+      padding:18px;
+    }
+    .card{
+      width:min(920px, 100%);
+      border:1px solid var(--stroke);
+      background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.03));
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    header{
+      padding:16px 18px;
+      border-bottom:1px solid rgba(255,255,255,.08);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.01));
+    }
+    .brand{display:flex; align-items:center; gap:12px;}
+    .logo{
+      width:44px; height:44px; border-radius: 16px;
+      background: conic-gradient(from 180deg, var(--accent), var(--ok), var(--warn), var(--accent));
+      box-shadow: 0 14px 40px rgba(139,92,246,.22);
+      border:1px solid rgba(255,255,255,.14);
+    }
+    h1{margin:0; font-size:18px}
+    .sub{margin-top:2px; font-size:12px; color:var(--muted)}
+    .pill{
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.03);
+      color: var(--muted);
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:12px;
+      user-select:none;
+      box-shadow: var(--shadow2);
+      white-space:nowrap;
+    }
+    main{padding:18px}
+
+    /* BIG tiles */
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(2, minmax(0,1fr));
+      gap:12px;
+    }
+    @media (max-width: 720px){ .grid{grid-template-columns:1fr} }
+
+    button{font: inherit}
+    .tile{
+      width:100%;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.03);
+      color:var(--text);
+      border-radius: 20px;
+      padding:16px 16px;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      min-height:86px;
+      box-shadow: var(--shadow2);
+      transition: transform .06s ease, border-color .12s ease, background .12s ease;
+      text-align:left;
+    }
+    .tile:hover{ border-color: rgba(255,255,255,.22); background: rgba(255,255,255,.05); }
+    .tile:active{ transform: scale(.99); }
+    .tile.primary{
+      background: linear-gradient(180deg, rgba(139,92,246,.32), rgba(139,92,246,.12));
+      border-color: rgba(139,92,246,.48);
+    }
+    .tile.ok{
+      background: linear-gradient(180deg, rgba(34,197,94,.22), rgba(34,197,94,.10));
+      border-color: rgba(34,197,94,.45);
+    }
+    .tile .l{display:flex; flex-direction:column; gap:4px}
+    .tile .l b{font-size:16px}
+    .tile .l span{font-size:12px; color:var(--muted); line-height:1.35}
+    .ico{
+      width:46px; height:46px;
+      border-radius: 18px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.20);
+      display:grid;
+      place-items:center;
+      font-size:22px;
+      flex:0 0 auto;
+    }
+
+    /* Step container */
+    .step{display:none; animation: pop .18s ease-out;}
+    .step.active{display:block;}
+    @keyframes pop{ from{opacity:.6; transform: translateY(6px)} to{opacity:1; transform: translateY(0)} }
+
+    .topRow{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:10px;
+    }
+    .back{
+      border:1px solid rgba(255,255,255,.12);
+      background: transparent;
+      color: var(--text);
+      padding:10px 12px;
+      border-radius: 14px;
+      cursor:pointer;
+      box-shadow: var(--shadow2);
+    }
+    .back:hover{border-color: rgba(255,255,255,.22); background: rgba(255,255,255,.04)}
+    .hint{font-size:12px; color:var(--muted); line-height:1.45; margin-top:10px}
+
+    /* Minimal optional input */
+    .field{
+      margin-top:12px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.18);
+      border-radius: 18px;
+      padding:12px 12px;
+      box-shadow: var(--shadow2);
+    }
+    .field label{display:block; font-size:12px; color:var(--muted); margin-bottom:6px}
+    .field input{
+      width:100%;
+      border-radius: 14px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.20);
+      color: var(--text);
+      padding:12px 12px;
+      min-height: 46px;
+      outline:none;
+    }
+
+    /* Ticket view */
+    .ticket{
+      border:1px dashed rgba(255,255,255,.22);
+      background: rgba(255,255,255,.03);
+      border-radius: 22px;
+      padding:14px 14px;
+      position:relative;
+      overflow:hidden;
+      box-shadow: var(--shadow2);
+    }
+    .ticket:before{
+      content:"";
+      position:absolute; inset:-2px;
+      background: radial-gradient(500px 260px at 20% 0%, rgba(139,92,246,.18), transparent 60%),
+                  radial-gradient(500px 260px at 90% 30%, rgba(34,197,94,.14), transparent 60%);
+      pointer-events:none;
+    }
+    .tTop{
+      display:flex; align-items:flex-start; justify-content:space-between; gap:12px;
+      position:relative;
+    }
+    .tMeta{font-size:12px; color:var(--muted)}
+    .tNum{
+      font-size:56px;
+      font-weight: 900;
+      letter-spacing: 1px;
+      line-height: 1;
+      margin:4px 0 6px;
+      text-shadow: 0 12px 40px rgba(0,0,0,.35);
+    }
+    .callout{
+      margin-top:12px;
+      border:1px solid rgba(34,197,94,.45);
+      background: rgba(34,197,94,.08);
+      border-radius: 18px;
+      padding:12px 12px;
+      display:none;
+      position:relative;
+    }
+    .callout.show{display:block}
+    .callout b{display:block; font-size:18px}
+    .callout span{display:block; font-size:12px; color:var(--muted); margin-top:4px; line-height:1.35}
+
+    .actions{
+      display:flex; gap:10px; flex-wrap:wrap;
+      margin-top:12px;
+    }
+    .btn{
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.03);
+      color: var(--text);
+      padding:12px 14px;
+      border-radius: 16px;
+      cursor:pointer;
+      box-shadow: var(--shadow2);
+    }
+    .btn.ok{
+      background: linear-gradient(180deg, rgba(34,197,94,.22), rgba(34,197,94,.10));
+      border-color: rgba(34,197,94,.45);
+    }
+    .btn.primary{
+      background: linear-gradient(180deg, rgba(139,92,246,.30), rgba(139,92,246,.12));
+      border-color: rgba(139,92,246,.48);
+    }
+    footer{
+      padding:12px 18px;
+      border-top:1px solid rgba(255,255,255,.08);
+      color:var(--muted);
+      font-size:12px;
+      display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap;
+    }
+    .kbd{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.18);
+      padding:2px 6px;
+      border-radius: 10px;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <!--
+    Kiosk v3 (vereinfachte UX):
+    - Nur 2 Schritte: 1) Wählen 2) Ticket
+    - Beratungsthemen als große Kacheln (besser lesbar als Dropdown)
+    - Optional: Handy (nur als Platzhalter)
+    - Kommunikation mit Verkäufer-Datei über localStorage/BroadcastChannel (musicshop_qms_v2)
+  -->
+
+  <div class="wrap">
+    <div class="card">
+      <header>
+        <div class="brand">
+          <div class="logo" aria-hidden="true"></div>
+          <div>
+            <h1>Ticket ziehen</h1>
+            <div class="sub">Tippe an, was du brauchst. Wir rufen dich an eine Kasse.</div>
+          </div>
+        </div>
+        <div class="pill" id="live">● Live</div>
+      </header>
+
+      <main>
+        <!-- STEP 1 -->
+        <section class="step active" data-step="1">
+          <div class="grid">
+            <button class="tile ok" id="btnPickup">
+              <div class="l">
+                <b>Abholung</b>
+                <span>Reserviert / Bestellung / Reparatur</span>
+              </div>
+              <div class="ico" aria-hidden="true">📦</div>
+            </button>
+
+            <button class="tile primary" id="btnAdvice">
+              <div class="l">
+                <b>Beratung</b>
+                <span>HiFi, Gitarren, Mikrofone, PA …</span>
+              </div>
+              <div class="ico" aria-hidden="true">🎛️</div>
+            </button>
+          </div>
+
+          <div class="hint">Optional kannst du nachher eine Nummer angeben (für SMS im echten System).</div>
+        </section>
+
+        <!-- STEP 1B: Advice topics (still step 1 flow) -->
+        <section class="step" data-step="1B">
+          <div class="topRow">
+            <button class="back" id="back1">← Zurück</button>
+            <div class="pill">Beratung: Thema wählen</div>
+          </div>
+
+          <div class="grid" id="topicGrid">
+            <!-- Filled by JS -->
+          </div>
+
+          <div class="hint">Tipp: Wähle das Thema, damit der richtige Verkäufer übernehmen kann.</div>
+        </section>
+
+        <!-- STEP 2: Ticket -->
+        <section class="step" data-step="2">
+          <div class="topRow">
+            <button class="back" id="back2">← Neues Ticket</button>
+            <div class="pill" id="ticketTypePill">—</div>
+          </div>
+
+          <div class="ticket">
+            <div class="tTop">
+              <div>
+                <div class="tMeta" id="tMeta">—</div>
+                <div class="tNum" id="tNum">A01</div>
+                <div class="tMeta" id="tMeta2">Bitte im Laden warten.</div>
+              </div>
+              <div class="pill"><span class="kbd">Ticket</span></div>
+            </div>
+
+            <div class="field" id="phoneWrap">
+              <label for="phone">Optional: Handy</label>
+              <input id="phone" inputmode="tel" placeholder="+41 79 123 45 67" />
+            </div>
+
+            <div class="callout" id="callout">
+              <b id="callTitle">Bitte zu Kasse 1</b>
+              <span id="callText">Ein Verkäufer übernimmt jetzt.</span>
+            </div>
+
+            <div class="actions">
+              <button class="btn ok" id="doneBtn">OK</button>
+              <button class="btn primary" id="soundBtn">🔊 Ton testen</button>
+            </div>
+
+            <div class="hint">Demo: Aufruf kommt von <span class="kbd">ticketsystem-verkaeufer.html</span>.</div>
+          </div>
+        </section>
+      </main>
+
+      <footer>
+        <span>Verkäufer-Datei: <span class="kbd">ticketsystem-verkaeufer.html</span></span>
+        <span><span class="kbd">localStorage</span> Demo</span>
+      </footer>
+    </div>
+  </div>
+
+  <script>
+    const STORE_KEY = "musicshop_qms_v2";
+    const bc = ("BroadcastChannel" in window) ? new BroadcastChannel("musicshop_qms_v2") : null;
+
+    const TOPICS = [
+      { name:"HiFi / Home Audio", icon:"🎧" },
+      { name:"Gitarren", icon:"🎸" },
+      { name:"Mikrofone", icon:"🎙️" },
+      { name:"PA / Live Sound", icon:"🔊" },
+      { name:"DJ / Controller", icon:"🪩" },
+      { name:"Recording / Studio", icon:"💻" },
+      { name:"Keyboards / Synths", icon:"🎹" },
+      { name:"Sonstiges", icon:"🧩" }
+    ];
+
+    function now(){ return Date.now(); }
+    function pad2(n){ return String(n).padStart(2,"0"); }
+
+    function load(){
+      try{
+        const raw = localStorage.getItem(STORE_KEY);
+        if(!raw) return { nextA:1, nextB:1, tickets:[], calls:[] };
+        return JSON.parse(raw);
+      }catch{
+        return { nextA:1, nextB:1, tickets:[], calls:[] };
+      }
+    }
+    function save(state){
+      localStorage.setItem(STORE_KEY, JSON.stringify(state));
+      if (bc) bc.postMessage({ type:"state" });
+    }
+
+    function cryptoRandomId(){
+      if (window.crypto?.randomUUID) return crypto.randomUUID();
+      return "id_" + Math.random().toString(16).slice(2) + "_" + Date.now().toString(16);
+    }
+
+    // UI
+    const steps = Array.from(document.querySelectorAll(".step"));
+    let currentTicketId = null;
+    let currentTicketCode = null;
+
+    function show(step){
+      steps.forEach(s => s.classList.toggle("active", s.dataset.step === step));
+      // basic badge update
+      const st = load();
+      const waiting = st.tickets.filter(t=>t.status==="WAITING").length;
+      document.getElementById("live").textContent = waiting ? `● Live · ${waiting} wartend` : "● Live";
+    }
+
+    // Build topic tiles
+    const topicGrid = document.getElementById("topicGrid");
+    TOPICS.forEach(t=>{
+      const btn = document.createElement("button");
+      btn.className = "tile";
+      btn.innerHTML = `
+        <div class="l">
+          <b>${t.name}</b>
+          <span>Beratung</span>
+        </div>
+        <div class="ico" aria-hidden="true">${t.icon}</div>
+      `;
+      btn.addEventListener("click", ()=> createAdvice(t.name));
+      topicGrid.appendChild(btn);
+    });
+
+    // Create ticket
+    function createPickup(){
+      const st = load();
+      const code = `A${pad2(st.nextA++)}`;
+      const ticket = {
+        id: cryptoRandomId(),
+        code,
+        type: "PICKUP",
+        topic: null,
+        note: null,
+        budget: null,
+        phone: null,
+        prio: "normal",
+        orderRef: null,
+        createdAt: now(),
+        status: "WAITING",
+        assignedCounter: null,
+        assignedBy: null,
+        assignedAt: null
+      };
+      st.tickets.push(ticket);
+      save(st);
+      currentTicketId = ticket.id;
+      currentTicketCode = ticket.code;
+      renderTicket(ticket);
+      show("2");
+    }
+
+    function createAdvice(topic){
+      const st = load();
+      const code = `B${pad2(st.nextB++)}`;
+      const ticket = {
+        id: cryptoRandomId(),
+        code,
+        type: "ADVICE",
+        topic,
+        note: null,
+        budget: null,
+        phone: null,
+        prio: "normal",
+        orderRef: null,
+        createdAt: now(),
+        status: "WAITING",
+        assignedCounter: null,
+        assignedBy: null,
+        assignedAt: null
+      };
+      st.tickets.push(ticket);
+      save(st);
+      currentTicketId = ticket.id;
+      currentTicketCode = ticket.code;
+      renderTicket(ticket);
+      show("2");
+    }
+
+    function renderTicket(t){
+      document.getElementById("tNum").textContent = t.code;
+      document.getElementById("ticketTypePill").textContent = t.type === "PICKUP" ? "Abholung" : "Beratung";
+      document.getElementById("tMeta").textContent =
+        (t.type === "PICKUP") ? "Typ: Abholung" : `Thema: ${t.topic}`;
+      document.getElementById("tMeta2").textContent = "Bitte im Laden warten. Du wirst zur Kasse aufgerufen.";
+      hideCallout();
+      document.getElementById("phone").value = "";
+    }
+
+    // Callout
+    function showCallout(counter, by){
+      const el = document.getElementById("callout");
+      document.getElementById("callTitle").textContent = `Bitte zu Kasse ${counter}`;
+      document.getElementById("callText").textContent = by ? `${by} übernimmt dein Ticket.` : "Ein Verkäufer übernimmt jetzt.";
+      el.classList.add("show");
+      playChime();
+    }
+    function hideCallout(){
+      document.getElementById("callout").classList.remove("show");
+    }
+
+    // Actions
+    document.getElementById("btnPickup").addEventListener("click", ()=> createPickup());
+    document.getElementById("btnAdvice").addEventListener("click", ()=> show("1B"));
+    document.getElementById("back1").addEventListener("click", ()=> show("1"));
+    document.getElementById("back2").addEventListener("click", ()=>{
+      currentTicketId = null;
+      currentTicketCode = null;
+      show("1");
+    });
+
+    document.getElementById("doneBtn").addEventListener("click", ()=>{
+      // store phone into ticket if entered (demo)
+      const phone = (document.getElementById("phone").value || "").trim();
+      if (phone && currentTicketId){
+        const st = load();
+        const t = st.tickets.find(x=>x.id===currentTicketId);
+        if (t){ t.phone = phone; save(st); }
+      }
+      show("1");
+    });
+
+    // Listen for seller updates
+    function onExternalUpdate(){
+      const st = load();
+      const waiting = st.tickets.filter(t=>t.status==="WAITING").length;
+      document.getElementById("live").textContent = waiting ? `● Live · ${waiting} wartend` : "● Live";
+
+      if(!currentTicketId) return;
+      const t = st.tickets.find(x=>x.id===currentTicketId);
+      if(!t) return;
+
+      if (t.status === "CALLED" && t.assignedCounter){
+        showCallout(t.assignedCounter, t.assignedBy || null);
+      }
+    }
+    window.addEventListener("storage", (e)=>{ if(e.key===STORE_KEY) onExternalUpdate(); });
+    if (bc) bc.onmessage = () => onExternalUpdate();
+
+    // Audio
+    let audioCtx = null;
+    function playChime(loud=false){
+      try{
+        audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+        const t0 = audioCtx.currentTime;
+        const master = audioCtx.createGain();
+        master.gain.value = loud ? 0.10 : 0.06;
+        master.connect(audioCtx.destination);
+
+        const freqs = [880, 1175, 1568];
+        freqs.forEach((f, i)=>{
+          const o = audioCtx.createOscillator();
+          const g = audioCtx.createGain();
+          o.type = "sine";
+          o.frequency.value = f;
+          g.gain.setValueAtTime(0.0001, t0);
+          g.gain.exponentialRampToValueAtTime(0.6, t0 + 0.01);
+          g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.26 + i*0.02);
+          o.connect(g); g.connect(master);
+          o.start(t0 + i*0.02);
+          o.stop(t0 + 0.30 + i*0.02);
+        });
+      }catch{}
+    }
+    document.getElementById("soundBtn").addEventListener("click", ()=> playChime(true));
+
+    // Boot
+    show("1");
+    onExternalUpdate();
+  </script>
+</body>
+</html>

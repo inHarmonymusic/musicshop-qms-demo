@@ -1,0 +1,872 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Musikshop – QMS (Verkäufer)</title>
+  <meta name="theme-color" content="#0b0f17" />
+  <style>
+    :root{
+      --bg0:#070a12;
+      --bg1:#0b1020;
+      --stroke:rgba(255,255,255,.10);
+      --text:#eef2ff;
+      --muted:#aab4c8;
+      --accent:#8b5cf6;
+      --ok:#22c55e;
+      --warn:#f59e0b;
+      --bad:#ef4444;
+      --shadow: 0 18px 60px rgba(0,0,0,.55);
+      --shadow2: 0 10px 30px rgba(0,0,0,.35);
+      --r:22px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      color:var(--text);
+      background:
+        radial-gradient(1200px 800px at 15% 8%, rgba(139,92,246,.26), transparent 60%),
+        radial-gradient(900px 650px at 88% 18%, rgba(34,197,94,.18), transparent 58%),
+        radial-gradient(900px 750px at 50% 120%, rgba(245,158,11,.12), transparent 60%),
+        linear-gradient(180deg, var(--bg0), var(--bg1));
+      overflow-x:hidden;
+    }
+    header{
+      position:sticky; top:0; z-index:10;
+      background: linear-gradient(180deg, rgba(0,0,0,.50), rgba(0,0,0,.20));
+      backdrop-filter: blur(10px);
+      border-bottom:1px solid rgba(255,255,255,.08);
+    }
+    .bar{
+      width:min(1280px, 100%);
+      margin:0 auto;
+      padding:14px 16px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+    .brand{display:flex; align-items:center; gap:12px}
+    .logo{
+      width:40px; height:40px; border-radius: 16px;
+      background: conic-gradient(from 180deg, var(--accent), var(--ok), var(--warn), var(--accent));
+      box-shadow: 0 14px 40px rgba(139,92,246,.20);
+      border:1px solid rgba(255,255,255,.14);
+    }
+    h1{margin:0; font-size:16px}
+    .sub{margin-top:2px; font-size:12px; color:var(--muted)}
+    .right{display:flex; gap:10px; align-items:center; flex-wrap:wrap; justify-content:flex-end;}
+    .pill{
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.03);
+      color: var(--muted);
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:12px;
+      user-select:none;
+      display:flex; gap:8px; align-items:center;
+      box-shadow: var(--shadow2);
+    }
+    .pill b{color:var(--text)}
+    .btn{
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.03);
+      color: var(--text);
+      padding:10px 12px;
+      border-radius: 14px;
+      cursor:pointer;
+      transition: transform .06s ease, border-color .12s ease, background .12s ease;
+      box-shadow: var(--shadow2);
+      font-size:12px;
+      user-select:none;
+      display:inline-flex; gap:8px; align-items:center;
+    }
+    .btn:hover{ border-color: rgba(255,255,255,.22); background: rgba(255,255,255,.05); }
+    .btn:active{ transform: scale(.99); }
+    .btn.primary{
+      background: linear-gradient(180deg, rgba(139,92,246,.30), rgba(139,92,246,.12));
+      border-color: rgba(139,92,246,.48);
+    }
+    .btn.ok{
+      background: linear-gradient(180deg, rgba(34,197,94,.22), rgba(34,197,94,.10));
+      border-color: rgba(34,197,94,.45);
+    }
+    .btn.warn{
+      background: linear-gradient(180deg, rgba(245,158,11,.22), rgba(245,158,11,.10));
+      border-color: rgba(245,158,11,.45);
+    }
+    .btn.bad{
+      background: linear-gradient(180deg, rgba(239,68,68,.20), rgba(239,68,68,.10));
+      border-color: rgba(239,68,68,.45);
+    }
+
+    main{
+      width:min(1280px, 100%);
+      margin:0 auto;
+      padding:16px;
+      display:grid;
+      grid-template-columns: 1.05fr .95fr;
+      gap:14px;
+      align-items:start;
+    }
+    @media (max-width: 1080px){ main{grid-template-columns:1fr} }
+
+    .panel{
+      border:1px solid rgba(255,255,255,.10);
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .phead{
+      padding:14px 14px;
+      border-bottom:1px solid rgba(255,255,255,.08);
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.01));
+    }
+    .phead h2{margin:0; font-size:13px; color:var(--muted); letter-spacing:.3px; text-transform:uppercase}
+    .pbody{padding:14px 14px}
+
+    .filters{display:flex; gap:10px; flex-wrap:wrap; align-items:end;}
+    .field{display:flex; flex-direction:column; gap:6px; min-width: 160px;}
+    label{font-size:12px; color:var(--muted)}
+    input, select, textarea{
+      font: inherit;
+      border-radius: 14px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.18);
+      color: var(--text);
+      padding:10px 10px;
+      outline:none;
+      min-height: 42px;
+    }
+    textarea{min-height: 72px; resize: vertical;}
+
+    .hr{height:1px; background: rgba(255,255,255,.08); margin:12px 0;}
+
+    .list{display:flex; flex-direction:column; gap:10px;}
+    .item{
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.03);
+      border-radius: 18px;
+      padding:12px 12px;
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      box-shadow: var(--shadow2);
+    }
+    .item .left{display:flex; gap:12px; align-items:flex-start;}
+    .code{
+      width:64px; height:54px;
+      border-radius: 18px;
+      display:grid; place-items:center;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.20);
+      font-weight:900;
+      letter-spacing:.6px;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.04);
+    }
+    .meta{display:flex; flex-direction:column; gap:4px}
+    .meta b{font-size:14px}
+    .meta span{font-size:12px; color:var(--muted); line-height:1.35}
+    .tags{display:flex; gap:8px; flex-wrap:wrap; margin-top:6px}
+    .tag{
+      font-size:12px;
+      color:var(--muted);
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.16);
+      padding:5px 9px;
+      border-radius:999px;
+      user-select:none;
+    }
+    .tag.ok{ border-color: rgba(34,197,94,.40); background: rgba(34,197,94,.08); }
+    .tag.warn{ border-color: rgba(245,158,11,.40); background: rgba(245,158,11,.08); }
+    .tag.bad{ border-color: rgba(239,68,68,.40); background: rgba(239,68,68,.08); }
+
+    .bigCard{
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.03);
+      border-radius: 20px;
+      padding:14px 14px;
+      box-shadow: var(--shadow2);
+    }
+    .bigTop{
+      display:flex; align-items:flex-start; justify-content:space-between; gap:12px;
+    }
+    .bigTop .title b{font-size:16px}
+    .bigTop .title span{display:block; font-size:12px; color:var(--muted); margin-top:4px; line-height:1.35}
+    .bigCode{
+      font-size:48px;
+      font-weight: 900;
+      letter-spacing: 1px;
+      line-height: 1;
+      text-shadow: 0 12px 40px rgba(0,0,0,.35);
+    }
+    .split{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+      margin-top:12px;
+    }
+    @media (max-width: 520px){ .split{grid-template-columns:1fr} }
+    .kpi{
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.16);
+      border-radius: 18px;
+      padding:12px 12px;
+    }
+    .kpi b{display:block; font-size:20px; margin-bottom:2px}
+    .kpi span{display:block; font-size:12px; color:var(--muted)}
+    .actions{display:flex; gap:10px; flex-wrap:wrap; margin-top:12px;}
+
+    .board{
+      display:grid;
+      grid-template-columns: repeat(3, minmax(0,1fr));
+      gap:10px;
+    }
+    @media (max-width: 920px){ .board{grid-template-columns:1fr} }
+    .slot{
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.18);
+      border-radius: 18px;
+      padding:12px 12px;
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      min-height:72px;
+    }
+    .slot.called{
+      border-color: rgba(34,197,94,.38);
+      background: rgba(34,197,94,.08);
+    }
+    .slot .l{display:flex; flex-direction:column; gap:2px}
+    .slot .l b{font-size:18px}
+    .slot .l span{font-size:12px; color:var(--muted)}
+    .slot .r{
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.03);
+      border-radius: 14px;
+      padding:8px 10px;
+      font-size:12px;
+      white-space:nowrap;
+    }
+
+    .toast{
+      position:fixed; left:50%; bottom:18px;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,.55);
+      border:1px solid rgba(255,255,255,.16);
+      padding:10px 12px;
+      border-radius: 16px;
+      box-shadow: var(--shadow2);
+      color: var(--text);
+      font-size:12px;
+      display:none;
+      z-index:20;
+      backdrop-filter: blur(10px);
+    }
+    .toast.show{display:block}
+    .link{color:var(--text); text-decoration:none; border-bottom:1px solid rgba(255,255,255,.22)}
+  </style>
+</head>
+<body>
+  <!--
+    Verkäufer-Ansicht (Demo):
+    - Öffne zusätzlich die Kiosk-Datei im selben Browser.
+    - Beide Seiten teilen sich den Zustand über localStorage/BroadcastChannel.
+    - Fixes:
+      1) "Abschliessen" löscht Ticket aus der Liste (damit es verschwindet).
+      2) Jede Kasse darf nur 1 aktives Ticket gleichzeitig (CALLED/SERVING).
+  -->
+
+  <header>
+    <div class="bar">
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+          <h1>Verkäufer – Warteschlange</h1>
+          <div class="sub">Tickets ansehen, übernehmen, aufrufen und abschliessen.</div>
+        </div>
+      </div>
+      <div class="right">
+        <div class="pill"><span>Du bist:</span> <b id="who">—</b></div>
+        <div class="pill"><span>Kasse:</span> <b id="counterPill">—</b></div>
+        <button class="btn" id="openDisplay">🖥️ Display</button>
+        <button class="btn warn" id="resetDemo">🧹 Demo zurücksetzen</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="panel">
+      <div class="phead">
+        <h2>Warteliste</h2>
+        <div class="pill"><span>Wartend:</span> <b id="waitingCount">0</b></div>
+      </div>
+      <div class="pbody">
+        <div class="filters">
+          <div class="field">
+            <label for="sellerName">Name</label>
+            <input id="sellerName" placeholder="z.B. Alex" />
+          </div>
+          <div class="field">
+            <label for="counter">Kasse</label>
+            <select id="counter">
+              <option value="1">Kasse 1</option>
+              <option value="2">Kasse 2</option>
+              <option value="3">Kasse 3</option>
+              <option value="4">Kasse 4</option>
+              <option value="5">Kasse 5</option>
+              <option value="6">Kasse 6</option>
+            </select>
+          </div>
+          <div class="field" style="min-width:200px">
+            <label for="filterType">Filter</label>
+            <select id="filterType">
+              <option value="ALL">Alle</option>
+              <option value="PICKUP">Nur Abholung</option>
+              <option value="ADVICE">Nur Beratung</option>
+            </select>
+          </div>
+          <div class="field" style="min-width:220px; flex:1">
+            <label for="search">Suche</label>
+            <input id="search" placeholder="z.B. Gitarren, #34821, PA ..." />
+          </div>
+          <button class="btn primary" id="saveMe">💾 Speichern</button>
+        </div>
+
+        <div class="hr"></div>
+
+        <div class="list" id="queueList"></div>
+        <div class="muted" id="emptyHint" style="display:none; font-size:12px; line-height:1.4;">
+          Keine passenden Tickets. (Erstelle ein Ticket im Kiosk, dann erscheint es hier.)
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="phead">
+        <h2>Meine Bedienung</h2>
+        <div class="pill"><span>Aktiv:</span> <b id="activeCount">0</b></div>
+      </div>
+      <div class="pbody">
+        <div class="bigCard">
+          <div class="bigTop">
+            <div class="title">
+              <b id="curTitle">Noch kein Ticket übernommen</b>
+              <span id="curSub">Wähle links ein Ticket und klicke „Übernehme“.</span>
+            </div>
+            <div class="bigCode" id="curCode">—</div>
+          </div>
+
+          <div class="split">
+            <div class="kpi">
+              <b id="kpiWait">—</b>
+              <span>Wartezeit</span>
+            </div>
+            <div class="kpi">
+              <b id="kpiType">—</b>
+              <span>Typ/Thema</span>
+            </div>
+          </div>
+
+          <div class="hr"></div>
+
+          <div class="field" style="min-width:0">
+            <label for="internalNote">Interne Notiz (nur Team)</label>
+            <textarea id="internalNote" placeholder="z.B. Zubehör anbieten, Budget beachten, …"></textarea>
+          </div>
+
+          <div class="actions">
+            <button class="btn ok" id="btnCall">📣 Aufrufen</button>
+            <button class="btn" id="btnServing">🧾 In Bedienung</button>
+            <button class="btn ok" id="btnDone">✅ Abschliessen</button>
+            <button class="btn bad" id="btnCancel">✖ Abbrechen</button>
+          </div>
+
+          <div class="muted" style="margin-top:10px; font-size:12px; line-height:1.45;">
+            Wichtig: Jede Kasse kann gleichzeitig nur 1 Ticket bedienen.
+          </div>
+        </div>
+
+        <div class="hr"></div>
+
+        <div class="bigCard">
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
+            <div>
+              <b style="font-size:14px">Letzte Aufrufe (Display)</b>
+              <div class="muted" style="font-size:12px; margin-top:4px;">Diese Liste würdet ihr auf einem grossen Monitor anzeigen.</div>
+            </div>
+            <button class="btn" id="clearCalls">🧼 Liste leeren</button>
+          </div>
+          <div style="margin-top:12px" class="board" id="board"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const STORE_KEY = "musicshop_qms_v2";
+    const bc = ("BroadcastChannel" in window) ? new BroadcastChannel("musicshop_qms_v2") : null;
+
+    function now(){ return Date.now(); }
+    function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[c])); }
+
+    function load(){
+      try{
+        const raw = localStorage.getItem(STORE_KEY);
+        if(!raw) return { nextA:1, nextB:1, tickets:[], calls:[] };
+        return JSON.parse(raw);
+      }catch{
+        return { nextA:1, nextB:1, tickets:[], calls:[] };
+      }
+    }
+    function save(state){
+      localStorage.setItem(STORE_KEY, JSON.stringify(state));
+      if (bc) bc.postMessage({ type:"state" });
+    }
+    function toast(msg){
+      const el = document.getElementById("toast");
+      el.textContent = msg;
+      el.classList.add("show");
+      clearTimeout(toast._t);
+      toast._t = setTimeout(()=> el.classList.remove("show"), 2200);
+    }
+
+    // seller profile persisted (demo)
+    const ME_KEY = "musicshop_qms_v2_me";
+    function loadMe(){
+      try{ return JSON.parse(localStorage.getItem(ME_KEY)) || { name:"", counter:"1" }; }
+      catch{ return { name:"", counter:"1" }; }
+    }
+    function saveMe(me){ localStorage.setItem(ME_KEY, JSON.stringify(me)); }
+
+    // Current selection
+    let currentId = null;
+
+    // Controls
+    const sellerName = document.getElementById("sellerName");
+    const counterSel = document.getElementById("counter");
+    const filterType = document.getElementById("filterType");
+    const search = document.getElementById("search");
+
+    function fmtTime(ms){
+      const s = Math.max(0, Math.floor(ms/1000));
+      const m = Math.floor(s/60);
+      const r = s%60;
+      if (m<60) return `${m}m ${r}s`;
+      const h = Math.floor(m/60);
+      const mm = m%60;
+      return `${h}h ${mm}m`;
+    }
+
+    function typeLabel(t){
+      if (t.type === "PICKUP") return "Abholung";
+      return t.topic ? `Beratung • ${t.topic}` : "Beratung";
+    }
+
+    // ✅ Rule: each counter can have only one active ticket at a time
+    function counterBusy(state, counter){
+      return state.tickets.some(t =>
+        (t.status === "CALLED" || t.status === "SERVING") &&
+        String(t.assignedCounter) === String(counter)
+      );
+    }
+
+    function prioTag(t){
+      if (t.type !== "ADVICE") return `<span class="tag">Standard</span>`;
+      if (t.prio === "kurz") return `<span class="tag ok">Kurze Frage</span>`;
+      if (t.prio === "ausfuehrlich") return `<span class="tag warn">Ausführlich</span>`;
+      return `<span class="tag">Normal</span>`;
+    }
+
+    function statusTag(t){
+      if (t.status === "WAITING") return `<span class="tag">Wartet</span>`;
+      if (t.status === "CALLED") return `<span class="tag ok">Aufgerufen (K${t.assignedCounter})</span>`;
+      if (t.status === "SERVING") return `<span class="tag ok">In Bedienung (K${t.assignedCounter})</span>`;
+      return `<span class="tag">—</span>`;
+    }
+
+    function updateHeaderPills(){
+      const name = (sellerName.value || "—").trim() || "—";
+      const counter = counterSel.value;
+      document.getElementById("who").textContent = name;
+      document.getElementById("counterPill").textContent = `Kasse ${counter}`;
+    }
+
+    function renderQueue(){
+      const st = load();
+      const list = document.getElementById("queueList");
+
+      const q = st.tickets.slice().sort((a,b)=> a.createdAt - b.createdAt);
+
+      // show only relevant (WAITING/CALLED/SERVING)
+      const q1 = q.filter(t => t.status === "WAITING" || t.status === "CALLED" || t.status === "SERVING");
+
+      const fType = filterType.value;
+      const q2 = q1.filter(t => fType === "ALL" ? true : t.type === fType);
+
+      const s = (search.value || "").trim().toLowerCase();
+      const q3 = q2.filter(t => {
+        if (!s) return true;
+        const hay = [t.topic, t.note, t.orderRef, t.code, t.phone].filter(Boolean).join(" ").toLowerCase();
+        return hay.includes(s);
+      });
+
+      document.getElementById("waitingCount").textContent = String(st.tickets.filter(t=>t.status==="WAITING").length);
+
+      const me = (sellerName.value||"").trim();
+      document.getElementById("activeCount").textContent = String(
+        st.tickets.filter(t => (t.status==="CALLED"||t.status==="SERVING") && t.assignedBy === me).length
+      );
+
+      list.innerHTML = "";
+      document.getElementById("emptyHint").style.display = q3.length ? "none" : "block";
+
+      q3.forEach(t=>{
+        const age = now() - t.createdAt;
+        const left = `
+          <div class="left">
+            <div class="code">${escapeHtml(t.code)}</div>
+            <div class="meta">
+              <b>${escapeHtml(typeLabel(t))}</b>
+              <span>${escapeHtml(t.note || t.orderRef || "—")}</span>
+              <div class="tags">
+                <span class="tag">Warte: ${escapeHtml(fmtTime(age))}</span>
+                ${prioTag(t)}
+                ${statusTag(t)}
+              </div>
+            </div>
+          </div>
+        `;
+
+        const actions = document.createElement("div");
+        actions.style.display = "flex";
+        actions.style.flexDirection = "column";
+        actions.style.gap = "8px";
+        actions.style.minWidth = "150px";
+
+        const bPeek = document.createElement("button");
+        bPeek.className = "btn";
+        bPeek.textContent = "Details";
+        bPeek.onclick = ()=> selectTicket(t.id);
+
+        const bTake = document.createElement("button");
+        bTake.className = "btn ok";
+        bTake.textContent = "Übernehme";
+        bTake.onclick = ()=> takeTicket(t.id);
+
+        actions.appendChild(bPeek);
+        actions.appendChild(bTake);
+
+        const row = document.createElement("div");
+        row.className = "item";
+        row.innerHTML = left;
+        row.appendChild(actions);
+
+        row.style.cursor = "pointer";
+        row.onclick = (e)=>{ if (e.target.tagName.toLowerCase()==="button") return; selectTicket(t.id); };
+
+        list.appendChild(row);
+      });
+
+      renderBoard();
+      refreshCurrentCard();
+      updateHeaderPills();
+    }
+
+    function selectTicket(id){
+      currentId = id;
+      refreshCurrentCard();
+    }
+
+    function refreshCurrentCard(){
+      const st = load();
+      const t = currentId ? st.tickets.find(x=>x.id===currentId) : null;
+
+      const curTitle = document.getElementById("curTitle");
+      const curSub = document.getElementById("curSub");
+      const curCode = document.getElementById("curCode");
+      const kpiWait = document.getElementById("kpiWait");
+      const kpiType = document.getElementById("kpiType");
+      const note = document.getElementById("internalNote");
+
+      if(!t){
+        curTitle.textContent = "Noch kein Ticket ausgewählt";
+        curSub.textContent = "Wähle links ein Ticket und klicke „Übernehme“.";
+        curCode.textContent = "—";
+        kpiWait.textContent = "—";
+        kpiType.textContent = "—";
+        note.value = "";
+        setBtnState(null);
+        return;
+      }
+
+      const age = now() - t.createdAt;
+      curTitle.textContent = (t.status === "WAITING") ? "Ausgewähltes Ticket" : "Ticket Status";
+      curSub.textContent = `${typeLabel(t)} · Status: ${t.status}${t.assignedCounter ? " · K" + t.assignedCounter : ""}`;
+      curCode.textContent = t.code;
+      kpiWait.textContent = fmtTime(age);
+      kpiType.textContent = typeLabel(t);
+
+      note.value = t._internalNote || "";
+      setBtnState(t);
+    }
+
+    function setBtnState(t){
+      const btnCall = document.getElementById("btnCall");
+      const btnServing = document.getElementById("btnServing");
+      const btnDone = document.getElementById("btnDone");
+      const btnCancel = document.getElementById("btnCancel");
+      const note = document.getElementById("internalNote");
+
+      const has = !!t;
+      [btnCall,btnServing,btnDone,btnCancel,note].forEach(x=> x.disabled = !has);
+      if(!t) return;
+
+      const me = (sellerName.value||"").trim() || "Verkäufer";
+      const mine = (t.assignedBy && t.assignedBy === me);
+      const waiting = t.status === "WAITING";
+      const called = t.status === "CALLED";
+      const serving = t.status === "SERVING";
+
+      btnCall.disabled = !(waiting || (mine && (called || serving)));
+      btnServing.disabled = !(mine && (called || serving));
+      btnDone.disabled = !(mine && (called || serving));
+      btnCancel.disabled = !(waiting || mine);
+    }
+
+    function takeTicket(id){
+      const st = load();
+      const t = st.tickets.find(x=>x.id===id);
+      if(!t) return;
+
+      const me = (sellerName.value||"").trim() || "Verkäufer";
+      const counter = counterSel.value;
+
+      if (counterBusy(st, counter)){
+        toast(`Kasse ${counter} ist bereits belegt. Bitte zuerst abschliessen oder eine andere Kasse wählen.`);
+        return;
+      }
+
+      t.assignedBy = me;
+      t.assignedCounter = counter;
+      t.assignedAt = now();
+      t.status = "CALLED";
+
+      st.calls.push({ code: t.code, counter, ts: now() });
+      st.calls = st.calls.slice(-12);
+
+      save(st);
+      currentId = id;
+      toast(`Ticket ${t.code} → Kasse ${counter}`);
+      renderQueue();
+    }
+
+    // Actions
+    document.getElementById("btnCall").addEventListener("click", ()=>{
+      const st = load();
+      const t = st.tickets.find(x=>x.id===currentId);
+      if(!t){ toast("Kein Ticket"); return; }
+
+      const me = (sellerName.value||"").trim() || "Verkäufer";
+      const counter = counterSel.value;
+
+      if (counterBusy(st, counter)){
+        // Re-call erlauben, falls das Ticket ohnehin schon auf dieser Kasse liegt
+        if (!(String(t.assignedCounter) === String(counter) && (t.status === "CALLED" || t.status === "SERVING"))){
+          toast(`Kasse ${counter} ist bereits belegt. Bitte zuerst abschliessen oder eine andere Kasse wählen.`);
+          return;
+        }
+      }
+
+      t.assignedBy = me;
+      t.assignedCounter = counter;
+      t.assignedAt = now();
+      t.status = "CALLED";
+
+      st.calls.push({ code: t.code, counter, ts: now() });
+      st.calls = st.calls.slice(-12);
+
+      save(st);
+      toast(`Aufgerufen: ${t.code} → K${counter}`);
+      renderQueue();
+    });
+
+    document.getElementById("btnServing").addEventListener("click", ()=>{
+      const st = load();
+      const t = st.tickets.find(x=>x.id===currentId);
+      if(!t) return;
+
+      const me = (sellerName.value||"").trim() || "Verkäufer";
+      if (t.assignedBy !== me){
+        toast("Dieses Ticket gehört nicht dir (Demo-Regel).");
+        return;
+      }
+      t.status = "SERVING";
+      save(st);
+      toast(`${t.code} ist in Bedienung`);
+      renderQueue();
+    });
+
+    document.getElementById("btnDone").addEventListener("click", ()=>{
+      const st = load();
+      const t = st.tickets.find(x=>x.id===currentId);
+      if(!t) return;
+
+      const me = (sellerName.value||"").trim() || "Verkäufer";
+      if (t.assignedBy !== me){
+        toast("Dieses Ticket gehört nicht dir (Demo-Regel).");
+        return;
+      }
+
+      // ✅ Auftrag abschliessen + Kasse automatisch freigeben
+      t.status = "DONE";
+      t.assignedCounter = null;
+      t.assignedBy = null;
+      t.assignedAt = null;
+
+      save(st);
+      toast(`${t.code} abgeschlossen`);
+
+      currentId = null;
+      document.getElementById("internalNote").value = "";
+      renderQueue();
+    });
+document.getElementById("btnCancel").addEventListener("click", ()=>{
+      const st = load();
+      const t = st.tickets.find(x=>x.id===currentId);
+      if(!t) return;
+
+      const me = (sellerName.value||"").trim() || "Verkäufer";
+      if (t.assignedBy && t.assignedBy !== me && t.status !== "WAITING"){
+        toast("Dieses Ticket gehört nicht dir (Demo-Regel).");
+        return;
+      }
+
+      // ✅ Abbrechen + Kasse automatisch freigeben
+      t.status = "CANCELLED";
+      t.assignedCounter = null;
+      t.assignedBy = null;
+      t.assignedAt = null;
+
+      save(st);
+      toast(`${t.code} abgebrochen`);
+
+      currentId = null;
+      document.getElementById("internalNote").value = "";
+      renderQueue();
+    });
+document.getElementById("internalNote").addEventListener("input", ()=>{
+      const st = load();
+      const t = st.tickets.find(x=>x.id===currentId);
+      if(!t) return;
+      t._internalNote = document.getElementById("internalNote").value;
+      save(st);
+    });
+
+    // Board
+    function renderBoard(){
+      const st = load();
+      const board = document.getElementById("board");
+      const calls = [...st.calls].slice(-9).reverse();
+      board.innerHTML = "";
+      for (let i=0;i<9;i++){
+        const c = calls[i];
+        const el = document.createElement("div");
+        el.className = "slot" + (c ? " called" : "");
+        el.innerHTML = c
+          ? `<div class="l"><b>${escapeHtml(c.code)}</b><span>${new Date(c.ts).toLocaleTimeString("de-CH",{hour:"2-digit",minute:"2-digit"})}</span></div>
+             <div class="r">Kasse ${escapeHtml(c.counter)}</div>`
+          : `<div class="l"><b>—</b><span>Warte</span></div><div class="r">—</div>`;
+        board.appendChild(el);
+      }
+    }
+
+    document.getElementById("clearCalls").addEventListener("click", ()=>{
+      const st = load();
+      st.calls = [];
+      save(st);
+      toast("Aufrufliste geleert");
+      renderQueue();
+    });
+
+    // Filters events
+    [filterType, search].forEach(el => el.addEventListener("input", renderQueue));
+
+    // Persist seller profile
+    document.getElementById("saveMe").addEventListener("click", ()=>{
+      const me = { name: sellerName.value || "", counter: counterSel.value || "1" };
+      saveMe(me);
+      toast("Profil gespeichert");
+      renderQueue();
+    });
+
+    [sellerName, counterSel].forEach(el => el.addEventListener("input", ()=>{
+      updateHeaderPills();
+      renderQueue();
+    }));
+
+    document.getElementById("resetDemo").addEventListener("click", ()=>{
+      localStorage.removeItem(STORE_KEY);
+      toast("Demo zurückgesetzt");
+      currentId = null;
+      renderQueue();
+    });
+
+    document.getElementById("openDisplay").addEventListener("click", ()=>{
+      const url = location.href.split("#")[0] + "#display";
+      window.open(url, "_blank");
+    });
+
+    function isDisplay(){ return location.hash === "#display"; }
+    function switchToDisplayMode(){
+      document.querySelector("main").innerHTML = `
+        <section class="panel" style="grid-column:1/-1;">
+          <div class="phead">
+            <h2>Display – Bitte zur Kasse</h2>
+            <div class="pill"><span>Auto-Update</span> <b>aktiv</b></div>
+          </div>
+          <div class="pbody">
+            <div class="bigCard">
+              <div class="muted" style="font-size:12px; line-height:1.4;">
+                Dieser Screen zeigt die letzten Aufrufe.
+              </div>
+              <div style="margin-top:12px" class="board" id="board"></div>
+              <div class="muted" style="font-size:12px; margin-top:10px;">
+                Zurück: Hash <a class="link" href="#">entfernen</a>.
+              </div>
+            </div>
+          </div>
+        </section>
+      `;
+      renderBoard();
+    }
+
+    function onExternalUpdate(){ renderQueue(); }
+    window.addEventListener("storage", (e)=>{ if(e.key===STORE_KEY) onExternalUpdate(); });
+    if (bc) bc.onmessage = () => onExternalUpdate();
+
+    (function init(){
+      const me = loadMe();
+      sellerName.value = me.name || "";
+      counterSel.value = me.counter || "1";
+      updateHeaderPills();
+
+      if (isDisplay()){
+        switchToDisplayMode();
+        onExternalUpdate();
+        setInterval(renderBoard, 800);
+        return;
+      }
+
+      renderQueue();
+      setInterval(renderQueue, 1200);
+    })();
+  </script>
+</body>
+</html>
